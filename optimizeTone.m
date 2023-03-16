@@ -21,7 +21,7 @@ set(gca,"FontName","Assistant","FontSize",40)
 grid on
 legend(["M","L","F","H","R"])
 
-close(f)
+%close(f)
 %% Code the Task-Dynamic model
 
 % % Choose tone
@@ -88,9 +88,46 @@ grid on
 legend(["Data","Synthesized"])
 set(gca,"FontName","Assistant","FontSize",20)
 
+%% Paramaeters for Tone 2
+%% M
+toneIx = 1;
 
-%% Create optimization problem with activation time
+% Set number of parameters (Target,Stiffness) and tones (Mid)
+nPars = 6; nGest = 1;
 
+% Optimization problem
+lb = [0 -10 t2(1)  t2(1) .01 0]';
+ub = [1000 -1e-3 t2(1) t2(end) .1 1]';
+
+%% L 
+toneIx = 2;
+
+% Set number of parameters (Target,Stiffness) and tones (Mid)
+nPars = 6; nGest = 1;
+
+% Optimization problem
+lb = [0 -20 t2(1)  t2(1) .01 0]';
+ub = [1000 -1e-3 t2(1) t2(end) .1 1]';
+
+%% F
+
+% Choose tone
+toneIx = 3;
+
+% Set number of parameters (Target,Stiffness) and tones (Mid)
+nPars = 6; nGest = 2;
+
+% Optimization problem
+lb = [0 1 t2(1) t2(10) .01 0]';
+ub = [10 100 t2(1) t2(50) .2 1]';
+
+lb2 = [0 -100 t2(10) t2(end) .01 0]';
+ub2 = [10 -1e-3 t2(50) t2(end) .2 1]';
+
+lb = [lb lb2];
+ub = [ub ub2];
+
+%% R
 % Choose tone
 toneIx = 5;
 
@@ -98,17 +135,44 @@ toneIx = 5;
 nPars = 6; nGest = 2;
 
 % Optimization problem
-lb = [0 -5 t2(1)  t2(30) .1 0]';
-ub = [10 -.5 t2(1) t2(60) .25 1]';
-lb2 = [0 .25 t2(30) t2(end) .1 0]';
-ub2 = [10 5 t2(70) t2(end) .25 1]';
-p = optimvar("p",nPars,nGest,"Type","continuous","LowerBound",[lb lb2],"UpperBound",[ub,ub2]);
+lb = [0 -10 t2(1)  t2(1) .01 0]';
+ub = [1000 -1e-3 t2(1) t2(70) .1 1]';
+
+lb2 = [0 -.1 t2(30) t2(end) .01 0]';
+ub2 = [10 100 t2(70) t2(end) .2 1]';
+
+lb = [lb lb2];
+ub = [ub ub2];
+%% Create optimization problem with activation time
+
+% Choose tone
+toneIx = 4;
+
+% Set number of parameters (Target,Stiffness) and tones (Mid)
+nPars = 6; nGest =3;
+
+% Optimization problem
+lb = [0 -20 t2(1)  t2(40) .01 0]';
+ub = [1000 -1e-3 t2(1) t2(60) .1 1]';
+
+
+lb2 = [0 1 t2(40) t2(60) .01 0]';
+ub2 = [10 100 t2(60) t2(80) .2 1]';
+
+lb3 = [0 -20 t2(80)  t2(end) .01 0]';
+ub3 = [1000 -1e-3 t2(90) t2(end) .1 1]';
+
+
+lb = [lb lb2 lb3];
+ub = [ub ub2 ub3];
+
+p = optimvar("p",nPars,nGest,"Type","continuous","LowerBound",lb,"UpperBound",ub);
 
 % Original time
 t = 1:size(M,2);
 
 % New time
-nSamp = 1000;
+nSamp = 100;
 t2 = linspace(t(1),t(end),100);
 
 % Initial Conditions
@@ -130,7 +194,7 @@ prob = optimproblem("Objective",obj);
 % Initial guess and solve problems
 p0.p = zeros(nPars,nGest);
 options = optimoptions('lsqnonlin','FiniteDifferenceStepSize',1e-8,"FiniteDifferenceType","central");
-[psol,sumsq] = solve(prob,p0,"Solver","lsqnonlin","Options",options);
+[psol,sumsq] = solve(prob,p0,"Solver","lsqnonlin","Options",options,"MinNumStartPoints",100);
 pOpt = struct2array(psol);
 
 % pOpt = [.02 .01; -1.25 .1; 0 25; 24 37];
@@ -140,7 +204,7 @@ ySol= ParamsToTDODE2(pOpt,t2,Y);
 
 % Plot
 plot(t2,groundTruth,"Color",C(toneIx,:),"LineWidth",3); hold on;
-plot(t2,ySol,"o","MarkerEdgeColor",C(2,:),"MarkerFaceColor",C(2,:).*.5+[1 1 1].*.5,...
+plot(t2,ySol,"o","MarkerEdgeColor",C(toneIx,:),"MarkerFaceColor",C(toneIx,:).*.5+[1 1 1].*.5,...
     "MarkerSize",10)
 
 grid on
