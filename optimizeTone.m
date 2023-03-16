@@ -4,6 +4,7 @@ load("muThaiTones.mat");
 
 %% Plot average trajectories
 
+% Figure
 f = figure("WindowState","maximized");
 
 % Load color array
