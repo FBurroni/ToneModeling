@@ -19,7 +19,9 @@ end
 % Change aspect of the plot
 set(gca,"FontName","Assistant","FontSize",40)
 grid on
-legend(["M","L","F","H","R"])
+
+names = ["M","L","F","H","R"];
+legend(names)
 
 close(f)
 %% Code the Task-Dynamic model
@@ -254,8 +256,8 @@ for k = 1 : numel(tonePars)
     plot(t2,groundTruth,"Color",C(toneIx,:),"LineWidth",3); hold on;
     plot(t2,ySol,"o","MarkerEdgeColor",C(toneIx,:),"MarkerFaceColor",C(toneIx,:).*.5+[1 1 1].*.5,...
         "MarkerSize",10)
-    
-    text()
+    ix = round(33/37*100);
+    text(t2(ix),groundTruth(ix)+.1,names(k),"FontSize",25,"FontName","Assistant")
     hold on
 end
 
