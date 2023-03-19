@@ -21,22 +21,22 @@ set(gca,"FontName","Assistant","FontSize",40)
 grid on
 legend(["M","L","F","H","R"])
 
-%close(f)
+close(f)
 %% Code the Task-Dynamic model
 
 % % Choose tone
 % toneIx = 1;
-% 
+%
 % % Plot example of TV evolution using the tas
 % t = linspace(1,5,1000);
 % Y = [.2;0];
 % p = [100 -4];
-% 
+%
 % [t,y] = ode45(@(t,y)t
 % dFunStep(t,y,p),t,Y);
 % plot(t,y(:,1))
 %% Create optimization problem with only stiffness and target
-close all
+f = figure("WindowState","maximized");
 
 % Choose tone
 toneIx = 1;
@@ -68,7 +68,7 @@ groundTruth = interp1(t,groundTruth,t2);
 obj = sum((fcn - groundTruth).^2);
 
 % Define optimization problem
-prob = optimproblem("Objective",obj); 
+prob = optimproblem("Objective",obj);
 
 % Initial guess and solve problems
 p0.p = [0 0];
@@ -87,27 +87,39 @@ plot(t2,ySol,"o","MarkerEdgeColor",C(2,:),"MarkerFaceColor",C(2,:).*.5+[1 1 1].*
 grid on
 legend(["Data","Synthesized"])
 set(gca,"FontName","Assistant","FontSize",20)
-
+hold off
+close(f)
 %% Paramaeters for Tone 2
 %% M
 toneIx = 1;
 
 % Set number of parameters (Target,Stiffness) and tones (Mid)
-nPars = 6; nGest = 1;
+nGest = 1;
 
 % Optimization problem
-lb = [0 -10 t2(1)  t2(1) .01 0]';
-ub = [1000 -1e-3 t2(1) t2(end) .1 1]';
+lb = [0 -10 t2(1)  t2(1) .01]';
+ub = [1 -1e-3 t2(1) t2(end) .1]';
 
-%% L 
+tonePars = struct();
+tonePars(1).lb = lb;
+tonePars(1).ub = ub;
+tonePars(1).NGest = nGest;
+tonePars(1).toneIx = toneIx;
+
+%% L
 toneIx = 2;
 
 % Set number of parameters (Target,Stiffness) and tones (Mid)
-nPars = 6; nGest = 1;
+nGest = 1;
 
 % Optimization problem
-lb = [0 -20 t2(1)  t2(1) .01 0]';
-ub = [1000 -1e-3 t2(1) t2(end) .1 1]';
+lb = [0 -20 t2(1) t2(1) .01]';
+ub = [1 -1 t2(30) t2(90) .1]';
+
+tonePars(2).lb = lb;
+tonePars(2).ub = ub;
+tonePars(2).NGest = nGest;
+tonePars(2).toneIx = toneIx;
 
 %% F
 
@@ -115,102 +127,146 @@ ub = [1000 -1e-3 t2(1) t2(end) .1 1]';
 toneIx = 3;
 
 % Set number of parameters (Target,Stiffness) and tones (Mid)
-nPars = 6; nGest = 2;
+nGest = 2;
 
 % Optimization problem
-lb = [0 1 t2(1) t2(10) .01 0]';
-ub = [10 100 t2(1) t2(50) .2 1]';
+lb = [0 1e-3 t2(1) t2(10) .01]';
+ub = [1 25 t2(1) t2(50) .2]';
 
-lb2 = [0 -100 t2(10) t2(end) .01 0]';
-ub2 = [10 -1e-3 t2(50) t2(end) .2 1]';
+lb2 = [0 -25 t2(10) t2(end) .01]';
+ub2 = [1 -1e-3 t2(50) t2(end) .2]';
 
 lb = [lb lb2];
 ub = [ub ub2];
+
+tonePars(toneIx).lb = lb;
+tonePars(toneIx).ub = ub;
+tonePars(toneIx).NGest = nGest;
+tonePars(toneIx).toneIx = toneIx;
+
+%% H
+
+% Choose tone
+toneIx = 4;
+
+% Set number of parameters (Target,Stiffness) and tones (Mid)
+nGest = 3;
+
+lb1 = [0 -15 t2(1)  t2(20) .01]';
+ub1 = [.1 -1e-3 t2(1) t2(50) .1]';
+
+lb2 = [0 1e-3 t2(20) t2(50) .01]';
+ub2 = [.1 15 t2(50) t2(80) .1]';
+
+lb3 = [0 -15 t2(80)  t2(end) .01]';
+ub3 = [.1 -1e-3 t2(90) t2(end) .1]';
+
+lb = [lb1 lb2 lb3];
+ub = [ub1 ub2 ub3];
+
+tonePars(toneIx).lb = lb;
+tonePars(toneIx).ub = ub;
+tonePars(toneIx).NGest = nGest;
+tonePars(toneIx).toneIx = toneIx;
 
 %% R
 % Choose tone
 toneIx = 5;
 
 % Set number of parameters (Target,Stiffness) and tones (Mid)
-nPars = 6; nGest = 2;
+nGest = 2;
 
 % Optimization problem
-lb = [0 -10 t2(1)  t2(1) .01 0]';
-ub = [1000 -1e-3 t2(1) t2(70) .1 1]';
+lb1 = [0 -10 t2(1)  t2(1) .01]';
+ub1 = [1 -1e-3 t2(1) t2(70) .1]';
 
-lb2 = [0 -.1 t2(30) t2(end) .01 0]';
-ub2 = [10 100 t2(70) t2(end) .2 1]';
+lb2 = [0 -.1 t2(30) t2(end) .01]';
+ub2 = [1 100 t2(70) t2(end) .2]';
 
-lb = [lb lb2];
-ub = [ub ub2];
+lb = [lb1 lb2];
+ub = [ub1 ub2];
+
+tonePars(toneIx).lb = lb;
+tonePars(toneIx).ub = ub;
+tonePars(toneIx).NGest = nGest;
+tonePars(toneIx).toneIx = toneIx;
 %% Create optimization problem with activation time
-
-% Choose tone
-toneIx = 4;
-
-% Set number of parameters (Target,Stiffness) and tones (Mid)
-nPars = 6; nGest =3;
-
-% Optimization problem
-lb = [0 -20 t2(1)  t2(40) .01 0]';
-ub = [1000 -1e-3 t2(1) t2(60) .1 1]';
-
-
-lb2 = [0 1 t2(40) t2(60) .01 0]';
-ub2 = [10 100 t2(60) t2(80) .2 1]';
-
-lb3 = [0 -20 t2(80)  t2(end) .01 0]';
-ub3 = [1000 -1e-3 t2(90) t2(end) .1 1]';
-
-
-lb = [lb lb2 lb3];
-ub = [ub ub2 ub3];
-
-p = optimvar("p",nPars,nGest,"Type","continuous","LowerBound",lb,"UpperBound",ub);
+f = figure;
 
 % Original time
 t = 1:size(M,2);
 
 % New time
-nSamp = 100;
+nSamp = 1000;
 t2 = linspace(t(1),t(end),100);
 
-% Initial Conditions
-Y = [M(toneIx,1);0];
+for k = 1 : numel(tonePars)
+    % Choose tone
+    toneIx = tonePars(k).toneIx;
 
-% Prepare parameters that need to be fed to ODE
-fcn = fcn2optimexpr(@ParamsToTDODE2,p,t2,Y);
+    % Set number of parameters (Target,Stiffness) and tones (Mid)
+    nPars = 5; nGest = tonePars(k).NGest+1;
 
-% Get ground truth and resample to 500 samples
-groundTruth = M(toneIx,:);
-groundTruth = interp1(t,groundTruth,t2);
+    % Optimization problem
+    lb = [0 -2 t2(1)  t2(end) 0]';
+    ub = [.1 2 t2(1) t2(end) 0]';
+    %
+    % lb1 = [0 -15 t2(1)  t2(1) .01]';
+    % ub1 = [1000 -1e-3 t2(1) t2(70) .1]';
+    %
+    % lb2 = [0 1e-3 t2(40) t2(end) .01]';
+    % ub2 = [10 15 t2(70) t2(end) .2]';
 
-% Define objective function
-obj = sum((fcn - groundTruth).^2);
+    lb = [lb tonePars(k).lb];
+    ub = [ub tonePars(k).ub];
 
-% Define optimization problem
-prob = optimproblem("Objective",obj); 
+    p = optimvar("p",nPars,nGest,"Type","continuous","LowerBound",lb,"UpperBound",ub);
 
-% Initial guess and solve problems
-p0.p = zeros(nPars,nGest);
-options = optimoptions('lsqnonlin','FiniteDifferenceStepSize',1e-8,"FiniteDifferenceType","central");
-[psol,sumsq] = solve(prob,p0,"Solver","lsqnonlin","Options",options,"MinNumStartPoints",100);
-pOpt = struct2array(psol);
+    % Initial Conditions
+    Y = [M(toneIx,1);0];
 
-% pOpt = [.02 .01; -1.25 .1; 0 25; 24 37];
+    % Prepare parameters that need to be fed to ODE
+    fcn = fcn2optimexpr(@ParamsToTDODE2,p,t2,Y);
 
-% Get solution for optimized parameters
-ySol= ParamsToTDODE2(pOpt,t2,Y);
+    % Get ground truth and resample to 500 samples
+    groundTruth = M(toneIx,:);
+    groundTruth = interp1(t,groundTruth,t2);
 
-% Plot
-plot(t2,groundTruth,"Color",C(toneIx,:),"LineWidth",3); hold on;
-plot(t2,ySol,"o","MarkerEdgeColor",C(toneIx,:),"MarkerFaceColor",C(toneIx,:).*.5+[1 1 1].*.5,...
-    "MarkerSize",10)
+    % Define objective function
+    obj = sum((fcn - groundTruth).^2);
+
+    % Define optimization problem
+    prob = optimproblem("Objective",obj);
+
+    % Initial guess and solve problems
+    p0.p = zeros(nPars,nGest);
+    options = optimoptions('lsqnonlin','FiniteDifferenceStepSize',1e-8,"FiniteDifferenceType","central",...
+        "MaxIter",100000);
+    [psol,sumsq] = solve(prob,p0,"Solver","lsqnonlin","Options",options,"MinNumStartPoints",100);
+    pOpt = struct2array(psol);
+
+    % pOpt = [.02 .01; -1.25 .1; 0 25; 24 37];
+
+    % Get solution for optimized parameters
+    ySol= ParamsToTDODE2(pOpt,t2,Y);
+
+    % Plot
+    plot(t2,groundTruth,"Color",C(toneIx,:),"LineWidth",3); hold on;
+    plot(t2,ySol,"o","MarkerEdgeColor",C(toneIx,:),"MarkerFaceColor",C(toneIx,:).*.5+[1 1 1].*.5,...
+        "MarkerSize",10)
+    
+    text()
+    hold on
+end
 
 grid on
 legend(["Data","Synthesized"])
-set(gca,"FontName","Assistant","FontSize",20)
-
+xlabel("Normalized Time")
+ylabel("F0 [z-score]")
+set(gca,"FontName","Assistant","FontSize",25)
+set(gcf, 'Position', get(0, 'Screensize'))
+exportgraphics(f,"ThaiTonesBurroni.png")
+close(f)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function dYdt = tdFunStep(t,y,p)
 % We need to turn the second-order ODE into a first-order lineary system
@@ -255,15 +311,18 @@ z = y(1);
 z2 = y(2);
 
 % Stiffness
-K = p(1);
+K = p(1)*ones(1,length(t));
 % K = ones(1,length(t)).*p(1);
 
 % Activation
 % a = zeros(1,length(t));
-z0 = zeros(1,length(t))+exp(-t*p(6));
+z0 = zeros(1,length(t))+exp(-t*p(1,1));
 
-for k = 1 : size(p,2)
+for k = 2 : size(p,2)
     z0 = z0  + getAContRamp(t,p(3,k),p(4,k),p(5,k)) .* p(2,k);
+    [~, minIx1] = min(t-p(3,k));
+    [~, minIx2] = min(t-p(4,k));
+    K(minIx1:minIx2) = p(1,k)*ones(1,length(t));
 end
 
 % Damping
