@@ -1,5 +1,5 @@
 # ToneModeling
-Set of MATLAB scripts to model f0 contours using Fujisaki and Task Dynamic model and optimization of the model parameters.
+A Set of MATLAB scripts to model f0 contours using THE Fujisaki and Task Dynamic models and perform optimization of model parameters.
 
 
 ![FujisakiFigure](https://user-images.githubusercontent.com/72473898/226264735-9ba4c9ed-a31f-404b-9f5e-cfbd3f8578cd.png)
